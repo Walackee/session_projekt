@@ -1,4 +1,4 @@
-# tesztsorozat
+# frontend
 
 ## Project setup
 ```

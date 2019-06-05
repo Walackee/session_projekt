@@ -1,4 +1,4 @@
-# tesztsorozat
+# session_projekt
 
 ## Project setup
 ```

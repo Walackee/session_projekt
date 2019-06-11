@@ -5,11 +5,13 @@ const {validatebody, validateparams, schemas } = require('./validation')
 const userscontrollers = require('./userscontrollers')
 const checkauth = require('./check-auth')
 
-//router.get(/osszesfelhasznaloleker/, checkauth, userscontrollers.osszesfelhasznalokeler)
-//router.get(/sajatfelhasznaloleker/, validateparams(schemas.schema2), checkauth, userscontrollers.sajatfelhasznaloleker)
 router.post(/regisztracio/, validatebody(schemas.schema1), userscontrollers.regisztracio)
-router.get(/ellenorzes/, userscontrollers.ellenorzes)
 router.post(/bejelentkezes/, validatebody(schemas.schema1), userscontrollers.bejelentkezes)
-//router.delete(/sajatfelhasznalotorol/, checkauth, userscontrollers.sajatfelhasznalotorol)
+router.get(/ellenorzes/, userscontrollers.ellenorzes)
+router.post(/jogosultsag/, validatebody(schemas.schema3), userscontrollers.jogosultsag)
+router.get(/kijelentkezes/, userscontrollers.kijelentkezes)
+router.get(/tesztsorozat/, checkauth(['student','teacher']), userscontrollers.tesztsorozat)
+router.get(/kiertekeles/, checkauth(['teacher']), userscontrollers.kiertekeles)
+router.get(/admin/, checkauth(['admin']), userscontrollers.admin)
 
 module.exports=router

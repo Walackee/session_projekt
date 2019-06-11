@@ -1,0 +1,29 @@
+[
+   {
+      "path": "/tesztsorozat",
+      "roles": [
+         "student",
+         "teacher"
+      ]
+   },
+   {
+      "path": "/profil",
+      "roles": [
+         "student",
+         "teacher",
+         "admin"
+      ]
+   },
+   {
+      "path": "/kiertekeles",
+      "roles": [
+         "teacher"
+      ]
+   },
+   {
+      "path": "/admin",
+      "roles": [
+         "admin"
+      ]
+   }
+]

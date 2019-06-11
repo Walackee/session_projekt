@@ -1,5 +1,5 @@
 "use strict"
-const port = process.env.SERVER_PORT
+const port = process.env.SERVER_PORT || 3004
 const backend = `http://localhost:${port}`
 const fs = require('fs')
 const secret = fs.readFileSync("./private.pem").toString()
@@ -18,26 +18,24 @@ const session_options = {
 	host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
 }
 const sessionstore = new mysqlstore(session_options)
 
 const usersroutes = require('./usersroutes')
 
 const static_file_options = {dotfiles: 'allow'}
-const frontend = __dirname + '/tesztsorozat/dist/'
+const frontend = __dirname + '/frontend/dist/'
 //const elearning = __dirname + '/host/elearning/dist/'
 //const szemelyes = __dirname + '/host/szemelyes/dist/'
 
-/*
 app.use(cors({  
-    origin: [`${backend}`],
-    methods: ["GET", "POST", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    origin: [process.env.ORIGIN],
+    methods: ["GET", "POST"],
+    credentials: true
 }))
-*/
 
-app.use(cors())
+//app.use(cors())
 app.use(helmet())
 app.use(morgan("common"))
 app.use(bodyParser.json())
@@ -46,14 +44,25 @@ app.use(compression())
 
 app.use(cookieparser())
 app.use(session({
-	key: 'tesztsorozat_süti',
+	name: 'tesztsorozat',
     resave: false,
     saveUninitialized: false,
     secret: secret,
-	store: sessionstore
+	store: sessionstore,
+	//cookie: { maxAge: 600000000, secure: true }
 }))
+
 app.use(passport.initialize())
 app.use(passport.session())
+
+/*
+app.use((req, res, next) => {
+    if (!req.user && !req.isAuthenticated()) {
+        res.clearCookie('tesztsorozat')		
+    }
+	next()
+})
+*/
 
 //app.use(express.static(elearning,options))
 app.use(express.static(frontend,static_file_options))
@@ -70,8 +79,7 @@ app.use((req, res, next) => {
 })
 
 app.use((error, req, res, next) => {
-	res.status(error.status || 500).json({
-		message: error.message})
+	res.status(error.status || 500).send({message: error.message})
 })
 
 module.exports = app;

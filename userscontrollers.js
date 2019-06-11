@@ -3,18 +3,10 @@ const mysql = require('mysql')
 const sql = require('./databaseconnection')
 const bcrypt = require('bcrypt')
 const saltrounds = 10
-const secret = fs.readFileSync('./private.pem').toString()
+const secret = fs.readFileSync('./private.pem', 'utf8').toString()
+const secured_routes = JSON.parse(fs.readFileSync('./secured_routes.json', 'utf8'))
+const all_buttons = JSON.parse(fs.readFileSync('./buttons.json', 'utf8'))
 const passport = require('passport')
-/*
-exports.osszesfelhasznalokeler = (req, res, next) => {
-	
-}
-*/
-/*
-exports.sajatfelhasznaloleker = (req, res, next) => {
-	
-}
-*/
 
 exports.regisztracio = (req, res, next) => {	
 	let lekerdezes = 'SELECT ??, ?? FROM ?? WHERE ?? = ?'
@@ -23,32 +15,38 @@ exports.regisztracio = (req, res, next) => {
 	sql.query(lekerdezes,
 		(err, user) => {
 			if (err) {
-				return res.status(500).json({message: err.sqlMessage})
+				res.status(500).send({message: err.sqlMessage})
 			} else {
 				if(!user.length){
 					bcrypt.hash(req.body.password, saltrounds, (err, hash) => {
 						if(err){
-							return res.status(500).json({message: err})
+							res.status(500).send({message: err})
 						} else {
-							let lekerdezes = 'INSERT INTO ?? (??, ??, ??) VALUES (?, ?, ?)'
-							let inserts = ['users','id','email','password', 'NULL', req.body.email, hash]
+							let lekerdezes = 'INSERT INTO ?? (??, ??, ??, ??) VALUES (?, ?, ?, ?)'
+							let inserts = ['users','id','email','password','role','NULL',req.body.email,hash,'student']
 							lekerdezes = mysql.format(lekerdezes, inserts)
 							sql.query(lekerdezes,(err, dl) => {
 								if (err) {
-									return res.status(500).json({message: err.sqlMessage})
+									res.status(500).send({message: err.sqlMessage})
 								} else {
+									console.log()
 									const id = dl.insertId
 									req.login(id,(err) => {
 										if(err){
-											return res.status(500).json({message: err})
+											res.status(500).send({message: err})
 										}
 									})
-									return res.status(201).json({message:'Felhasználó létrehozva!'})}
+									req.session.email = req.body.email
+									req.session.role = 'student'
+									req.session.save()
+									let buttons = all_buttons.find((element) => {return Object.keys(element) == req.session.role})
+									buttons = buttons[req.session.role]
+									res.status(201).send({buttons: buttons})}
 							})
 						}
 					})
 				} else {
-					return res.status(409).json({message:'Ez a felhasználó már létezik!'})
+					res.status(409).send({message:'Ez a felhasználó már létezik!'})
 				}
 			}
 		})	
@@ -60,26 +58,30 @@ exports.bejelentkezes = (req, res, next) => {
 	lekerdezes = mysql.format(lekerdezes, inserts)
 	sql.query(lekerdezes,(err, user) => {
 			if (err) {
-				return res.status(500).json({message: err.sqlMessage})
+				return res.status(500).send({message: err.sqlMessage})
 			} else {
-				if(user.length < 1){
-					res.status(401).json({message:'Még nem regisztrált!'})
+				if(!user.length){
+					res.status(401).send({message:'Még nem regisztrált!'})
 				} else {
 					bcrypt.compare(req.body.password, user[0].password, (err, result) => {
 						if(err){
-							res.status(401).json({
-								error: err})
+							res.status(401).send({error: err})
 						} else {
 							if(result){
 								const id = user[0].id
 								req.login(id,(err) => {
 									if(err){
-										return res.status(500).json({message: err})
+										res.status(500).send({message: err})
 									}
 								})
-								return res.status(201).json({message:'Sikeres bejelentkezés!'})
+								req.session.email = req.body.email
+								req.session.role = user[0].role
+								req.session.save()
+								let buttons = all_buttons.find((element) => {return Object.keys(element) == req.session.role})
+								buttons = buttons[req.session.role]
+								res.status(201).send({buttons: buttons})
 							} else {
-								res.status(401).json({message:'Sikertelen azonosítás 2!'})
+								res.status(401).send({message:'Sikertelen azonosítás 2!'})
 							}
 						}
 					})
@@ -88,11 +90,56 @@ exports.bejelentkezes = (req, res, next) => {
 		})
 }
 
+exports.kijelentkezes = (req, res, next) => {
+	req.logout()
+	req.session.destroy()
+	res.clearCookie('tesztsorozat')
+	if(req.isAuthenticated()){
+		res.status(401).send({message:'Sikertelen kijelentkezes!'})
+	} else {
+		res.status(201).send({message:'Sikeres kijelentkezes!'})
+	}
+}
+
 exports.ellenorzes = (req, res, next) => {
-	console.log(req.user)
-	console.log(req.session)
-	console.log(req.isAuthenticated())
-	res.status(201).json(req.session)
+	let own_role = req.session.role
+	let email = req.session.email
+	let buttons = all_buttons.find((element) => {return Object.keys(element) == own_role})
+	buttons = buttons[own_role]
+	if(req.isAuthenticated()){
+		res.status(201).send({email: req.session.email, buttons: buttons})
+	} else {
+		res.status(201).send({email: '', buttons: []})	
+	}
+}
+
+exports.jogosultsag = (req, res, next) => {
+	let path = req.body.path
+	let own_role = req.session.role
+	let auth = false
+	auth = secured_routes.find((element) => {return element.path == path}).roles.find((role) => {return role == own_role}) == own_role ? true : false
+	console.log('own_role',own_role)
+	console.log('auth',auth)
+	if(req.session && req.isAuthenticated() && auth){
+		res.status(201).send({resp: true})
+	} else {
+		res.status(201).send({resp: false})	
+	}
+}
+
+exports.tesztsorozat = (req, res, next) => {
+	res.status(201).send({message: 'Tesztsorozat tartalom'})
+	next()
+}
+
+exports.kiertekeles = (req, res, next) => {
+	res.status(201).send({message: 'Kiértékelés tartalom'})
+	next()
+}
+
+exports.admin = (req, res, next) => {
+	res.status(201).send({message: 'Admin tartalom'})
+	next()
 }
 
 passport.serializeUser((id, done) => {
@@ -102,9 +149,3 @@ passport.serializeUser((id, done) => {
 passport.deserializeUser((id, done) => {
 	done(null, id)
 })
-
-/*
-exports.sajatfelhasznalotorol = (req, res, next) => {
-	
-}
-*/

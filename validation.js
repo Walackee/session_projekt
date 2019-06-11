@@ -5,9 +5,7 @@ module.exports = {
 		return (req, res, next) => {
 			const result = joi.validate(req.body, schema)
 			if(result.error){
-				return res.status(400).json({
-					message: result.error.details[0].message
-				})
+				res.status(400).send({message: result.error.details[0].message})
 			}
 			// req.value.body ellenőrzése req.body helyett
 			if(!req.value){
@@ -21,9 +19,7 @@ module.exports = {
 		return (req, res, next) => {
 			const result = joi.validate(req.params, schema)
 			if(result.error){
-				return res.status(400).json({
-					message: result.error.details[0].message
-				})
+				res.status(400).send({message: result.error.details[0].message})
 			}
 			next()
 		}
@@ -34,14 +30,19 @@ module.exports = {
 			password: joi.string().error(() => 'A jelszó formátuma nem string!')
 						 .max(15).error(() => 'A string hossza maximum 15 karakter lehet!')
 						 .required().error(() => 'A jelszó hiányzik!'),
-			email: joi.string().error(() => 'Az email hiányzik!')
+			email: joi.string().error(() => 'Helytelen email formátum!')
 					  .email().error(() => 'Helytelen email formátum!')
-					  .min(1).error(() => 'A string hossza minimum 1!')
+					  .min(1).error(() => 'A string hossza minimum 1 karakter!')
 					  .max(30).error(() => 'A string hossza maximum 30 karakter lehet!')
 					  .required().error(() => 'Az email hiányzik!')
 		}),
 		schema2: joi.object().keys({
 			id: joi.number().required().error(() => 'Az azonosító hiányzik!')
-		})	
+		}),
+		schema3: joi.object().keys({
+			path: joi.string().error(() => 'Helytelen formátum!')
+					  .min(1).error(() => 'A string hossza minimum 1 karakter!')
+					  .required().error(() => 'Az path hiányzik!')
+		})
 	}
 }

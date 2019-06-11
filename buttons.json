@@ -1,0 +1,49 @@
+[
+   {
+      "student": [
+         {
+            "icon": "playlist_add_check",
+            "title": "Tesztsorozat",
+            "link": "/tesztsorozat"
+         },
+         {
+            "icon": "person",
+            "title": "Profil",
+            "link": "/profil"
+         }
+      ]
+   },
+   {
+      "teacher": [
+         {
+            "icon": "insert_chart_outlined",
+            "title": "Kiértékelés",
+            "link": "/kiertekeles"
+         },
+         {
+            "icon": "playlist_add_check",
+            "title": "Tesztsorozat",
+            "link": "/tesztsorozat"
+         },
+         {
+            "icon": "person",
+            "title": "Profil",
+            "link": "/profil"
+         }
+      ]
+   },
+   {
+      "admin": [
+         {
+            "icon": "build",
+            "title": "Admin",
+            "link": "/admin"
+         },
+         {
+            "icon": "person",
+            "title": "Profil",
+            "link": "/profil"
+         }
+      ]
+   }
+]

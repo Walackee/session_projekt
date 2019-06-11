@@ -104,7 +104,7 @@
     },
 	
     mounted () {
-      this.$store.dispatch('ellenorzes')
+		this.email = this.user
     },
 	
     methods: {

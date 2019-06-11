@@ -152,7 +152,7 @@ export default {
   
 		bejelentkezvemint(){
 			if(this.userIsAuthenticated){
-				return this.$store.getters.useremail
+				return this.$store.getters.user
 			} else {
 				return ""
 			}
@@ -164,20 +164,22 @@ export default {
 		  {icon: 'face', title: 'Regisztráció', link: '/regisztracio'}
         ]
         if (this.userIsAuthenticated) {
-          menuItems = [
-			{icon: 'playlist_add_check', title: 'Tesztsorozat', link: '/tesztsorozat'},
-            {icon: 'person', title: 'Profil', link: '/profil'}
-          ]
+          menuItems = this.$store.getters.buttons
         }
         return menuItems
       },
+	  
       userIsAuthenticated () {
         return this.$store.getters.user !== null && this.$store.getters.user !== undefined
-      }
+      },
+	  
+	  authorized(){
+		return this.$store.getters.authorized
+	  }
     },
 	
 	mounted() {
-		this.$store.dispatch('ellenorzes')
+		
 	},
 	
     methods: {

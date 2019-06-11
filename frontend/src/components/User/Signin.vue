@@ -105,7 +105,7 @@
     },
 	
 	mounted(){
-		this.$store.dispatch('ellenorzes')
+		
 	},
 	
     methods: {

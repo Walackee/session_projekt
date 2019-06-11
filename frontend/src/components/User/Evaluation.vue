@@ -9,7 +9,7 @@
 		</v-layout>
 		<v-card>
 		  <div class="text-xs-center">
-            <h2>Ez lesz a főoldal!</h2>
+            <h2>Ez lesz a kiértékelés oldal!</h2>
           </div>
 		</v-card>
       </v-flex>
@@ -24,19 +24,32 @@
 	  
       }
     },
+	
+	watch: {
+      user (value) {
+        if (value == null || value == undefined) {
+          this.$router.push('/bejelentkezes')
+        }
+      }
+    },
+	
     computed: {
+		user(){
+			return this.$store.getters.user;
+		},
 		error () {
 			return this.$store.getters.error
 		}
     },
+	
     mounted () {
-      
+		
     },
+	
     methods: {
 			onDismissed () {
-				this.$store.commit('setError', null)
+				this.$store.commit('clearError')
 			}
 		}
-		
-		}
+	}
 </script>

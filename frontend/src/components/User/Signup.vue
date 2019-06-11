@@ -107,7 +107,7 @@
     watch: {
       user (value) {
         if (value !== null && value !== undefined) {
-          this.$router.push('/tesztsorozat')
+          //this.$router.push('/tesztsorozat')
         }
       }
     },
@@ -120,7 +120,7 @@
       }
     },
 	mounted() {
-		this.$store.dispatch('ellenorzes')
+		
 	},
   }
 </script>

@@ -10,16 +10,13 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
 	user: null,
-	useremail: '',
 	loading: false,
 	error: null,
+	buttons: []
   },
   getters: {
-	  user (state) {
+	user (state) {
 		return state.user
-	},
-	useremail (state){
-		return state.useremail
 	},
 	loading (state) {
 		return state.loading
@@ -27,70 +24,85 @@ export default new Vuex.Store({
 	error (state) {
 		return state.error
 	},
+	buttons (state) {
+		return state.buttons
+	},
   },
   mutations: {
 	setUser (state, payload) {
 		state.user = payload
-		},
-	setUseremail (state, payload) {
-		state.useremail = payload.email
 		},
 	setLoading (state, payload) {
 		state.loading = payload
 		},
 	setError (state, payload) {
 		state.error = payload
+		},
+	setButtons (state, payload) {
+		state.buttons = payload
 		}
   },
   actions: {
-	autoSignIn ({dispatch, commit}, payload) {
-		commit('setUser', {id: payload.uid})
-		commit('setUseremail', {email: payload.email})
-		router.push(`/tesztsorozat`)
+	autoSignIn ({commit}) {
+		axios.get(`${ backend }/felhasznalok/ellenorzes/`).then( resp => {
+			commit('setUser', resp.data.email)
+			commit('setButtons', resp.data.buttons)
+		}).catch(err => {
+			commit('setError', {message: err.response.data.message})
+		})
 	},
 
-	signUserIn ({commit}, payload) {
-		commit('setUser', {id: Math.random()*10000})
-		commit('setUseremail', {email: payload.email})
-		router.push(`/tesztsorozat`)
+	signUserIn ({dispatch, commit}, payload) {
+		let params = {
+			email: payload.email,
+			password: payload.password
+		}
+		axios.post(`${ backend }/felhasznalok/bejelentkezes/`, params).then( resp => {
+			commit('setButtons', resp.data.buttons)
+			commit('setUser', params.email)
+			router.push('/fooldal')
+		}).catch(err => {
+			commit('setError', {message: err.response.data.message})
+		})
     },
 	
 	signUserUp ({commit}, payload) {
-		commit('setError', null)
 		let params = {
 			email: payload.email,
 			password: payload.password
 		}
 		axios.post(`${ backend }/felhasznalok/regisztracio/`, params).then( resp => {
-		commit('setUser', {id: Math.random()*10000})
-		commit('setUseremail', "")
-		router.push(`/tesztsorozat`)
+			commit('setButtons', resp.data.buttons)
+			commit('setUser', params.email)
+			router.push('/fooldal')
 		}).catch(err => {
-			console.log(err)
-			//commit('setError', {message: err.response.data.message})
+			commit('setError', {message: err.response.data.message})
 		})
 	},
-	
-		ellenorzes ({ commit }) {
-			axios.get(`${ backend }/felhasznalok/ellenorzes/`).then( resp => {
-				console.log(resp.data)
-			}).catch(err => {
-				console.log(err)
-				//commit('setError', {message: err.response.data.message})
-			})
+		
+	resetpassword ({ commit }) {
+		commit('setUser', null)
+		router.push('/bejelentkezes')
 	},
 	
-	resetPasswordWithEmail ({ commit }, payload) {
+	resetemail ({ commit }) {
 		commit('setUser', null)
-		commit('setUseremail', "")
-		router.push(`/bejelentkezes`)
+		router.push('/bejelentkezes')
+	},
+	
+	deleteuser ({ commit }) {
+		commit('setUser', null)
+		router.push('/bejelentkezes')
 	},
 	  
 	logout ({commit}) {
-		commit('setUser', null)
-		commit('setUseremail', "")
-		router.push(`/bejelentkezes`)
-		
+		axios.get(`${ backend }/felhasznalok/kijelentkezes/`).then( resp => {
+			commit('setUser', null)
+			commit('setButtons', [])
+			router.push('/bejelentkezes')
+		}).catch(err => {
+			commit('setError', {message: err.response.data.message})
+		})
 	}
   }
 })

@@ -4,7 +4,7 @@ const sql = require('./databaseconnection')
 const bcrypt = require('bcrypt')
 const saltrounds = 10
 const secret = fs.readFileSync('./private.pem', 'utf8').toString()
-const secured_routes = JSON.parse(fs.readFileSync('./secured_routes.json', 'utf8'))
+const secured_views = JSON.parse(fs.readFileSync('./secured_views.json', 'utf8'))
 const all_buttons = JSON.parse(fs.readFileSync('./buttons.json', 'utf8'))
 const passport = require('passport')
 
@@ -117,7 +117,7 @@ exports.jogosultsag = (req, res, next) => {
 	let path = req.body.path
 	let own_role = req.session.role
 	let auth = false
-	auth = secured_routes.find((element) => {return element.path == path}).roles.find((role) => {return role == own_role}) == own_role ? true : false
+	auth = secured_views.find((element) => {return element.path == path}).roles.find((role) => {return role == own_role}) == own_role ? true : false
 	console.log('own_role',own_role)
 	console.log('auth',auth)
 	if(req.session && req.isAuthenticated() && auth){

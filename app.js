@@ -1,5 +1,5 @@
 "use strict"
-const port = process.env.SERVER_PORT || 3004
+const port = process.env.SERVER_PORT
 const backend = `http://localhost:${port}`
 const fs = require('fs')
 const secret = fs.readFileSync("./private.pem").toString()
